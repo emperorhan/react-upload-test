@@ -1,26 +1,64 @@
-import React from 'react';
-import logo from './logo.svg';
-import './App.css';
+import React from "react";
+import gql from "graphql-tag";
+import { useMutation, useApolloClient } from "react-apollo-hooks";
+
+const SINGLE_UPLOAD_IMG_MUTATION = gql`
+    mutation SingleUploadImg($file: Upload!) {
+        SingleUploadImg(file: $file) {
+            ok
+            error
+            file {
+                filename
+                mimetype
+                encoding
+            }
+        }
+    }
+`;
 
 const App: React.FC = () => {
-  return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.tsx</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
+    const [uploadImgMutation] = useMutation(SINGLE_UPLOAD_IMG_MUTATION);
+    const apolloClient = useApolloClient();
+    const onChange: React.ChangeEventHandler<HTMLInputElement> = async ({
+        target: { validity, files }
+    }) => {
+        if (validity.valid && files) {
+            if (files.length > 1) {
+                const data = await uploadImgMutation({
+                    variables: { files }
+                });
+                console.log(`upload success ${data}`);
+            } else {
+                const file = files[0];
+                const { data } = await uploadImgMutation({
+                    variables: { file }
+                });
+                console.log(`upload success ${data}`);
+            }
+        }
+    };
+    return (
+        <div
+            style={{
+                height: "-webkit-fill-available",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center"
+            }}
         >
-          Learn React
-        </a>
-      </header>
-    </div>
-  );
-}
+            <div>
+                <label>Single Upload</label>
+                <br />
+                <input type="file" onChange={onChange} />
+            </div>
+            <div>
+                <label>Multi Upload</label>
+                <br />
+
+                <input type="file" multiple required onChange={onChange} />
+            </div>
+        </div>
+    );
+};
 
 export default App;

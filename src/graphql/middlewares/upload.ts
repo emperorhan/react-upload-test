@@ -4,7 +4,16 @@ import { ApolloLink, Operation } from "apollo-link";
 
 import { config } from "../../config";
 
-const httpOptions: HttpOptions = { uri: config.GRAPHQL_ENDPOINT };
+// const uri = config.HASURA_GRAPHQL_ENDPOINT;
+// const uri = config.GRAPHQL_ENDPOINT;
+const uri = "http://localhost:9000/graphql";
+
+const httpOptions: HttpOptions = {
+    uri,
+    headers: {
+        "x-hasura-admin-secret": 1234
+    }
+};
 const uploadLink: ApolloLink = createUploadLink(httpOptions);
 
 const isFile = (value: any): boolean =>
